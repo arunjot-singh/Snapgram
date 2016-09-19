@@ -30,54 +30,54 @@ class TableViewController: UIViewController, UITableViewDelegate, UITableViewDat
             refresh()
         }
         
-         func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+         func numberOfSections(in tableView: UITableView) -> Int {
             return 1
         }
         
-         func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return usernames.count
         }
         
-         func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             
-            let cell = tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath)
-            cell.textLabel?.text = sortedUsernames[indexPath.row]
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+            cell.textLabel?.text = sortedUsernames[(indexPath as NSIndexPath).row]
             
-            let followedObjectID = userids[indexPath.row]
+            let followedObjectID = userids[(indexPath as NSIndexPath).row]
             
             if isFollowing[followedObjectID] == true {
-                cell.accessoryType = UITableViewCellAccessoryType.Checkmark
+                cell.accessoryType = UITableViewCellAccessoryType.checkmark
             }
             
             return cell
             
         }
         
-         func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
             
-            let cell: UITableViewCell = tableView.cellForRowAtIndexPath(indexPath)!
+            let cell: UITableViewCell = tableView.cellForRow(at: indexPath)!
             
-            let followedObjectID = userids[indexPath.row]
+            let followedObjectID = userids[(indexPath as NSIndexPath).row]
             if isFollowing[followedObjectID] == false {
                 
                 isFollowing[followedObjectID] = true
-                cell.accessoryType = UITableViewCellAccessoryType.Checkmark
+                cell.accessoryType = UITableViewCellAccessoryType.checkmark
                 
                 let following = PFObject(className: "Followers")
-                following["following"] = userids[indexPath.row]
-                following["follower"] = PFUser.currentUser()?.objectId
+                following["following"] = userids[(indexPath as NSIndexPath).row]
+                following["follower"] = PFUser.current()?.objectId
                 following.saveInBackground()
                 
             } else {
                 
                 isFollowing[followedObjectID] = false
-                cell.accessoryType = UITableViewCellAccessoryType.None
+                cell.accessoryType = UITableViewCellAccessoryType.none
                 
                 let query = PFQuery(className: "Followers")
-                query.whereKey("follower", equalTo: PFUser.currentUser()!.objectId!)
-                query.whereKey("following", equalTo: userids[indexPath.row])
+                query.whereKey("follower", equalTo: PFUser.current()!.objectId!)
+                query.whereKey("following", equalTo: userids[(indexPath as NSIndexPath).row])
                 
-                query.findObjectsInBackgroundWithBlock({ (objects, error) in
+                query.findObjectsInBackground(block: { (objects, error) in
                     
                     if let objects = objects {
                         
@@ -94,29 +94,29 @@ class TableViewController: UIViewController, UITableViewDelegate, UITableViewDat
         func loadUserList() {
             
             let query = PFUser.query()
-            query?.findObjectsInBackgroundWithBlock({ (objects, error) in
+            query?.findObjectsInBackground(block: { (objects, error) in
                 
                 if let users = objects {
                     
-                    self.usernames.removeAll(keepCapacity: true)
-                    self.userids.removeAll(keepCapacity: true)
-                    self.sortedUsernames.removeAll(keepCapacity: true)
-                    self.isFollowing.removeAll(keepCapacity: true)
+                    self.usernames.removeAll(keepingCapacity: true)
+                    self.userids.removeAll(keepingCapacity: true)
+                    self.sortedUsernames.removeAll(keepingCapacity: true)
+                    self.isFollowing.removeAll(keepingCapacity: true)
                     
                     for object in users {
                         
                         if let user = object as? PFUser {
                             
-                            if user.objectId != PFUser.currentUser()?.objectId {
+                            if user.objectId != PFUser.current()?.objectId {
                                 
                                 self.usernames.append(user.username!)
                                 self.userids.append(user.objectId!)
                                 
                                 let query = PFQuery(className: "Followers")
-                                query.whereKey("follower", equalTo: PFUser.currentUser()!.objectId!)
+                                query.whereKey("follower", equalTo: PFUser.current()!.objectId!)
                                 query.whereKey("following", equalTo: user.objectId!)
                                 
-                                query.findObjectsInBackgroundWithBlock({ (objects, error) in
+                                query.findObjectsInBackground(block: { (objects, error) in
                                     
                                     if let objects = objects {
                                         
@@ -142,7 +142,7 @@ class TableViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                 }
                 
-                self.sortedUsernames = self.usernames.sort{ $0 < $1 }
+                self.sortedUsernames = self.usernames.sorted{ $0 < $1 }
                 
             })
         }
@@ -151,7 +151,7 @@ class TableViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             refresher = UIRefreshControl()
             refresher.attributedTitle = NSAttributedString(string: "Pull to refresh")
-            refresher.addTarget(self, action: #selector(TableViewController.loadUserList), forControlEvents: UIControlEvents.ValueChanged)
+            refresher.addTarget(self, action: #selector(TableViewController.loadUserList), for: UIControlEvents.valueChanged)
             self.tableView.addSubview(refresher)
         }
         

@@ -15,7 +15,7 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        usertitle = (PFUser.currentUser()?.username)!
+        usertitle = (PFUser.current()?.username)!
         userTitle?.title = usertitle
     }
     
@@ -28,24 +28,24 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
     @IBOutlet weak var imageToPost: UIImageView!
     @IBOutlet weak var message: UITextField!
     
-    @IBAction func logOut(sender: AnyObject) {
+    @IBAction func logOut(_ sender: AnyObject) {
         PFUser.logOutInBackground()
-        performSegueWithIdentifier("logout", sender: self)
-        UIApplication.sharedApplication().keyWindow?.rootViewController = ViewController()
+        performSegue(withIdentifier: "logout", sender: self)
+        UIApplication.shared.keyWindow?.rootViewController = ViewController()
     }
     
-    @IBAction func ChooseImage(sender: AnyObject) {
+    @IBAction func ChooseImage(_ sender: AnyObject) {
         
         //print((PFUser.currentUser()?.username)!)
         let image = UIImagePickerController()
         image.delegate = self
-        image.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        image.sourceType = UIImagePickerControllerSourceType.photoLibrary
         image.allowsEditing = false
         
-        self.presentViewController(image, animated: true, completion: nil)
+        self.present(image, animated: true, completion: nil)
     }
    
-    @IBAction func PostImage(sender: AnyObject) {
+    @IBAction func PostImage(_ sender: AnyObject) {
         
         var errorMessage = "Please try again later"
         
@@ -54,14 +54,14 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
             
             let post = PFObject(className: "Post")
             post["message"] = message.text
-            post["userId"] = PFUser.currentUser()?.objectId
-            post["userName"] = PFUser.currentUser()?.username
+            post["userId"] = PFUser.current()?.objectId
+            post["userName"] = PFUser.current()?.username
             
             let imageData = UIImageJPEGRepresentation(imageToPost.image!, 1)
             let imageFile = PFFile(name: "image.jpeg", data: imageData!)
             post["imageFile"] = imageFile
             
-            post.saveInBackgroundWithBlock { (success, error) in
+            post.saveInBackground { (success, error) in
                 
                 self.hideActivityIndicator()
                 if error == nil {
@@ -72,7 +72,7 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
                     self.message.text = ""
                 } else {
                     
-                    if let errorString = error?.userInfo["error"] as? String {
+                    if let errorString = error?._userInfo["error"] as? String {
                         
                         errorMessage = errorString
                     }
@@ -94,9 +94,9 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
 
     
 
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         imageToPost.image = image
         imagePicked = true
     }
@@ -107,34 +107,34 @@ class PostImageViewController: UIViewController, UINavigationControllerDelegate,
         activityIndicator.backgroundColor = UIColor(white: 0.0, alpha: 0.7)
         activityIndicator.center = self.view.center
         activityIndicator.hidesWhenStopped = true
-        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.White
+        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.white
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
-        UIApplication.sharedApplication().beginIgnoringInteractionEvents()
+        UIApplication.shared.beginIgnoringInteractionEvents()
     }
     
     func hideActivityIndicator() {
         
         activityIndicator.stopAnimating()
-        UIApplication.sharedApplication().endIgnoringInteractionEvents()
+        UIApplication.shared.endIgnoringInteractionEvents()
     }
     
-    func displayAlert(title: String, message: String) {
+    func displayAlert(_ title: String, message: String) {
         
-        let alert = UIAlertController(title: title , message: message , preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction((UIAlertAction(title: "OK", style: .Default, handler: { (action) in
+        let alert = UIAlertController(title: title , message: message , preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction((UIAlertAction(title: "OK", style: .default, handler: { (action) in
            
         })))
         
-        self.presentViewController(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
     
-    func backgroundThread(delay: Double = 0.0, background: (() -> Void)? = nil, completion: (() -> Void)? = nil) {
-        dispatch_async(dispatch_get_global_queue(Int(QOS_CLASS_USER_INITIATED.rawValue), 0)) {
+    func backgroundThread(_ delay: Double = 0.0, background: (() -> Void)? = nil, completion: (() -> Void)? = nil) {
+        DispatchQueue.global(priority: Int(DispatchQoS.QoSClass.userInitiated.rawValue)).async {
             if(background != nil){ background!(); }
             
-            let popTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delay * Double(NSEC_PER_SEC)))
-            dispatch_after(popTime, dispatch_get_main_queue()) {
+            let popTime = DispatchTime.now() + Double(Int64(delay * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: popTime) {
                 if(completion != nil){ completion!(); }
             }
         }

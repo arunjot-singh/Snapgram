@@ -18,7 +18,7 @@ class FeedTableViewController: UIViewController {
     var imageFiles = [PFFile]()
     var users = [String: String]()
         
-    @IBAction func refresh(sender: AnyObject) {
+    @IBAction func refresh(_ sender: AnyObject) {
         
         loadFeed()
     }
@@ -32,19 +32,19 @@ class FeedTableViewController: UIViewController {
        // })
     }
     
-     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+     func numberOfSectionsInTableView(_ tableView: UITableView) -> Int {
         return 1
     }
     
-     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return userNames.count
     }
     
-     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+     func tableView(_ tableView: UITableView, cellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("feedcell", forIndexPath: indexPath) as! feedCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "feedcell", for: indexPath) as! feedCell
         
-        imageFiles[indexPath.row].getDataInBackgroundWithBlock { (data, error) in
+        imageFiles[(indexPath as NSIndexPath).row].getDataInBackground { (data, error) in
             
             if let downloadedImage = UIImage(data: data!) {
                 
@@ -52,22 +52,22 @@ class FeedTableViewController: UIViewController {
             }
         }
         
-        cell.userName.text = userNames[indexPath.row]
-        cell.message.text = messages[indexPath.row]
+        cell.userName.text = userNames[(indexPath as NSIndexPath).row]
+        cell.message.text = messages[(indexPath as NSIndexPath).row]
         return cell
     }
     
     func loadFeed() {
         
         let getFollowedUsersQuery = PFQuery(className: "Followers")
-        getFollowedUsersQuery.whereKey("follower", equalTo: PFUser.currentUser()!.objectId!)
-        getFollowedUsersQuery.findObjectsInBackgroundWithBlock { (objects, error) in
+        getFollowedUsersQuery.whereKey("follower", equalTo: PFUser.current()!.objectId!)
+        getFollowedUsersQuery.findObjectsInBackground { (objects, error) in
             
             if let objects = objects {
                 
-                self.messages.removeAll(keepCapacity: true)
-                self.userNames.removeAll(keepCapacity: true)
-                self.imageFiles.removeAll(keepCapacity: true)
+                self.messages.removeAll(keepingCapacity: true)
+                self.userNames.removeAll(keepingCapacity: true)
+                self.imageFiles.removeAll(keepingCapacity: true)
                 
                 
                 for object in objects {
@@ -77,7 +77,7 @@ class FeedTableViewController: UIViewController {
                     let postQuery = PFQuery(className: "Post")
                     postQuery.whereKey("userId", equalTo: followedUser)
                     
-                    postQuery.findObjectsInBackgroundWithBlock({ (objects, error) in
+                    postQuery.findObjectsInBackground(block: { (objects, error) in
                         
                         if let objects = objects {
                             

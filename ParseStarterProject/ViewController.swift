@@ -33,16 +33,16 @@ import Parse
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         
-        if PFUser.currentUser()?.objectId != nil {
+        if PFUser.current()?.objectId != nil {
             
-            self.performSegueWithIdentifier("login", sender: self)
+            self.performSegue(withIdentifier: "login", sender: self)
 
         }
     }
     
-    @IBAction func signUp(sender: AnyObject) {
+    @IBAction func signUp(_ sender: AnyObject) {
         
         if userName.text == "" || userName.text == "" {
             
@@ -61,14 +61,14 @@ import Parse
                 user.password = password.text
                 
                 
-                user.signUpInBackgroundWithBlock({ (success, error) in
+                user.signUpInBackground(block: { (success, error) in
                     
                     self.hideActivityIndicator()
                     
                     if error == nil {
                         
-                        self.performSegueWithIdentifier("login", sender: self)
-                        UIApplication.sharedApplication().keyWindow?.rootViewController = PostImageViewController()
+                        self.performSegue(withIdentifier: "login", sender: self)
+                        UIApplication.shared.keyWindow?.rootViewController = PostImageViewController()
 
                         
                     } else {
@@ -84,19 +84,19 @@ import Parse
                 
             } else {
                 
-                PFUser.logInWithUsernameInBackground(userName.text!, password: password.text!, block: { (user, error) in
+                PFUser.logInWithUsername(inBackground: userName.text!, password: password.text!, block: { (user, error) in
                     
                     self.hideActivityIndicator()
                     
                     if user != nil {
                         
-                        self.performSegueWithIdentifier("login", sender: self)
-                        UIApplication.sharedApplication().keyWindow?.rootViewController = PostImageViewController()
+                        self.performSegue(withIdentifier: "login", sender: self)
+                        UIApplication.shared.keyWindow?.rootViewController = PostImageViewController()
 
                         
                     } else {
                         
-                        if let errorString = error?.userInfo["error"] as? String {
+                        if let errorString = error?._userInfo["error"] as? String {
                             
                             errorMessage = errorString
                         }
@@ -113,20 +113,20 @@ import Parse
     
     
     
-    @IBAction func login(sender: AnyObject) {
+    @IBAction func login(_ sender: AnyObject) {
         
         if signUpActive {
             
-            signupLogin.setTitle("Login", forState: .Normal)
+            signupLogin.setTitle("Login", for: UIControlState())
             regsteredText.text = "Not registered?"
-            loginSignup.setTitle("Sign Up", forState: .Normal)
+            loginSignup.setTitle("Sign Up", for: UIControlState())
             signUpActive = false
             
         } else {
             
-            signupLogin.setTitle("Sign Up", forState: .Normal)
+            signupLogin.setTitle("Sign Up", for: UIControlState())
             regsteredText.text = "Already registered?"
-            loginSignup.setTitle("Login", forState: .Normal)
+            loginSignup.setTitle("Login", for: UIControlState())
             signUpActive = true
 
             
@@ -136,31 +136,31 @@ import Parse
    
     
     
-     func displayAlert(title: String, message: String) {
+     func displayAlert(_ title: String, message: String) {
         
-        let alert = UIAlertController(title: title , message: message , preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction((UIAlertAction(title: "OK", style: .Default, handler: { (action) in
-            self.dismissViewControllerAnimated(true, completion: nil)
+        let alert = UIAlertController(title: title , message: message , preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction((UIAlertAction(title: "OK", style: .default, handler: { (action) in
+            self.dismiss(animated: true, completion: nil)
         })))
         
-        self.presentViewController(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
     
     func displayActivityIndicator() {
         
-        activityIndicator = UIActivityIndicatorView(frame: CGRectMake(0, 0, 50, 50))
+        activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
         activityIndicator.center = self.view.center
         activityIndicator.hidesWhenStopped = true
-        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
+        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
-        UIApplication.sharedApplication().beginIgnoringInteractionEvents()
+        UIApplication.shared.beginIgnoringInteractionEvents()
     }
     
     func hideActivityIndicator() {
         
         self.activityIndicator.stopAnimating()
-        UIApplication.sharedApplication().endIgnoringInteractionEvents()
+        UIApplication.shared.endIgnoringInteractionEvents()
     }
 
 }
